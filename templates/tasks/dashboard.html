@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="page-header">
+        <div>
+            <h1>Hey, {{ user.username }} 👋</h1>
+            <p class="subtitle">Here's a snapshot of your productivity.</p>
+        </div>
+        <a href="{% url 'tasks:create' %}" class="btn btn-primary">+ New Task</a>
+    </header>
+
+    <section class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">Total</span>
+            <span class="stat-value">{{ total }}</span>
+        </div>
+        <div class="stat-card stat-pending">
+            <span class="stat-label">Pending</span>
+            <span class="stat-value">{{ pending }}</span>
+        </div>
+        <div class="stat-card stat-completed">
+            <span class="stat-label">Completed</span>
+            <span class="stat-value">{{ completed }}</span>
+        </div>
+        <div class="stat-card stat-overdue">
+            <span class="stat-label">Overdue</span>
+            <span class="stat-value">{{ overdue }}</span>
+        </div>
+    </section>
+
+    <section class="two-col">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Recent tasks</h2>
+                <a href="{% url 'tasks:list' %}" class="link">View all →</a>
+            </div>
+            {% if recent_tasks %}
+                <ul class="task-mini-list">
+                    {% for task in recent_tasks %}
+                        <li class="task-mini {% if task.completed %}done{% endif %}">
+                            <span class="priority-dot priority-{{ task.priority }}"></span>
+                            <span class="task-mini-title">{{ task.title }}</span>
+                            {% if task.completed %}<span class="tag tag-done">Done</span>{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="empty">No tasks yet. <a href="{% url 'tasks:create' %}">Create your first one →</a></p>
+            {% endif %}
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Upcoming</h2>
+            </div>
+            {% if upcoming %}
+                <ul class="task-mini-list">
+                    {% for task in upcoming %}
+                        <li class="task-mini">
+                            <span class="priority-dot priority-{{ task.priority }}"></span>
+                            <span class="task-mini-title">{{ task.title }}</span>
+                            <span class="tag">{{ task.due_date }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="empty">No tasks with due dates.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

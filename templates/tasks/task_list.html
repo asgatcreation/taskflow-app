@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}My Tasks · TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="page-header">
+        <div>
+            <h1>My Tasks</h1>
+            <p class="subtitle">{{ page_obj.paginator.count }} task{{ page_obj.paginator.count|pluralize }} found</p>
+        </div>
+        <a href="{% url 'tasks:create' %}" class="btn btn-primary">+ New Task</a>
+    </header>
+
+    <form method="get" class="filter-bar">
+        <input type="text" name="q" placeholder="Search tasks..." value="{{ q }}" class="form-input">
+        <select name="status" class="form-input">
+            <option value="">All statuses</option>
+            <option value="pending" {% if status == "pending" %}selected{% endif %}>Pending</option>
+            <option value="completed" {% if status == "completed" %}selected{% endif %}>Completed</option>
+        </select>
+        <select name="priority" class="form-input">
+            <option value="">All priorities</option>
+            <option value="high" {% if priority == "high" %}selected{% endif %}>High</option>
+            <option value="medium" {% if priority == "medium" %}selected{% endif %}>Medium</option>
+            <option value="low" {% if priority == "low" %}selected{% endif %}>Low</option>
+        </select>
+        <button type="submit" class="btn btn-secondary">Filter</button>
+        {% if q or status or priority %}
+            <a href="{% url 'tasks:list' %}" class="btn btn-ghost">Clear</a>
+        {% endif %}
+    </form>
+
+    {% if tasks %}
+        <ul class="task-list">
+            {% for task in tasks %}
+                <li class="task-item {% if task.completed %}completed{% endif %} {% if task.is_overdue %}overdue{% endif %}">
+                    <form method="post" action="{% url 'tasks:toggle' task.pk %}" class="toggle-form">
+                        {% csrf_token %}
+                        <button type="submit" class="toggle-btn" title="Toggle complete">
+                            {% if task.completed %}✓{% endif %}
+                        </button>
+                    </form>
+
+                    <div class="task-body">
+                        <div class="task-title-row">
+                            <h3 class="task-title">{{ task.title }}</h3>
+                            <span class="priority-badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                        </div>
+                        {% if task.description %}
+                            <p class="task-description">{{ task.description|truncatewords:20 }}</p>
+                        {% endif %}
+                        <div class="task-meta">
+                            {% if task.due_date %}
+                                <span class="meta-item {% if task.is_overdue %}overdue-text{% endif %}">
+                                    📅 Due {{ task.due_date }}
+                                    {% if task.is_overdue %}(overdue){% endif %}
+                                </span>
+                            {% endif %}
+                            <span class="meta-item">Created {{ task.created_at|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="task-actions">
+                        <a href="{% url 'tasks:update' task.pk %}" class="icon-btn" title="Edit">✏️</a>
+                        <a href="{% url 'tasks:delete' task.pk %}" class="icon-btn" title="Delete">🗑️</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+
+        {% if is_paginated %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if priority %}&priority={{ priority }}{% endif %}" class="btn btn-ghost">← Previous</a>
+                {% endif %}
+                <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if priority %}&priority={{ priority }}{% endif %}" class="btn btn-ghost">Next →</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h2>No tasks found</h2>
+            <p>Try adjusting your filters or create a new task.</p>
+            <a href="{% url 'tasks:create' %}" class="btn btn-primary">+ Create Task</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

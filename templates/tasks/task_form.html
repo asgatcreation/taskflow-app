@@ -31,8 +31,9 @@
                     {% if form.priority.errors %}<small class="error">{{ form.priority.errors.0 }}</small>{% endif %}
                 </div>
                 <div class="form-group">
-                    <label for="{{ form.due_date.id_for_label }}">Due date</label>
+                    <label for="{{ form.due_date.id_for_label }}">Deadline (date &amp; time)</label>
                     {{ form.due_date }}
+                    <small class="help">Leave empty if there's no deadline.</small>
                     {% if form.due_date.errors %}<small class="error">{{ form.due_date.errors.0 }}</small>{% endif %}
                 </div>
             </div>
@@ -41,6 +42,16 @@
                 {{ form.completed }}
                 <label for="{{ form.completed.id_for_label }}">Mark as completed</label>
             </div>
+
+            {% if object.pk %}
+                <div class="form-audit">
+                    <div class="audit-item"><span>🕓 Created</span><strong>{{ object.created_at|date:"M d, Y · H:i" }}</strong></div>
+                    <div class="audit-item"><span>✏️ Last updated</span><strong>{{ object.updated_at|date:"M d, Y · H:i" }}</strong></div>
+                    {% if object.completed_at %}
+                        <div class="audit-item"><span>✅ Completed</span><strong>{{ object.completed_at|date:"M d, Y · H:i" }}</strong></div>
+                    {% endif %}
+                </div>
+            {% endif %}
 
             <div class="form-actions">
                 <a href="{% url 'tasks:list' %}" class="btn btn-ghost">Cancel</a>

@@ -1,0 +1,449 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | TaskFlow Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <span class="tf-logo">✅</span> TaskFlow <span class="tf-badge">Admin</span>
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    /* ─── Base dark theme ──────────────────────────────── */
+    :root {
+        --tf-bg: #0f172a;
+        --tf-panel: #1e293b;
+        --tf-soft: #334155;
+        --tf-border: #334155;
+        --tf-text: #f1f5f9;
+        --tf-muted: #94a3b8;
+        --tf-primary: #6366f1;
+        --tf-primary-hover: #4f46e5;
+        --tf-success: #10b981;
+        --tf-warning: #f59e0b;
+        --tf-danger: #ef4444;
+
+        --primary: #6366f1;
+        --secondary: #334155;
+        --accent: #8b5cf6;
+        --body-fg: #f1f5f9;
+        --body-bg: #0f172a;
+        --body-quiet-color: #94a3b8;
+        --body-loud-color: #f1f5f9;
+        --header-bg: #0f172a;
+        --header-color: #f1f5f9;
+        --header-link-color: #f1f5f9;
+        --breadcrumbs-bg: #1e293b;
+        --breadcrumbs-fg: #cbd5e1;
+        --breadcrumbs-link-fg: #e2e8f0;
+        --link-fg: #a5b4fc;
+        --link-hover-color: #c7d2fe;
+        --link-selected-fg: #e0e7ff;
+        --hairline-color: #334155;
+        --border-color: #334155;
+        --error-fg: #fca5a5;
+        --message-success-bg: rgba(16, 185, 129, 0.12);
+        --message-warning-bg: rgba(245, 158, 11, 0.12);
+        --message-error-bg: rgba(239, 68, 68, 0.12);
+        --darkened-bg: #1e293b;
+        --selected-bg: #273449;
+        --selected-row: #273449;
+        --button-fg: #fff;
+        --button-bg: #6366f1;
+        --button-hover-bg: #4f46e5;
+        --default-button-bg: #4f46e5;
+        --default-button-hover-bg: #4338ca;
+        --close-button-bg: #475569;
+        --close-button-hover-bg: #64748b;
+        --delete-button-bg: #ef4444;
+        --delete-button-hover-bg: #dc2626;
+        --object-tools-fg: #fff;
+        --object-tools-bg: #4f46e5;
+        --object-tools-hover-bg: #4338ca;
+    }
+
+    html[data-theme="light"], :root { color-scheme: dark; }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        background: var(--tf-bg) !important;
+        color: var(--tf-text) !important;
+    }
+
+    /* ─── Header ───────────────────────────────────────── */
+    #header {
+        background: rgba(15, 23, 42, 0.9) !important;
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--tf-border) !important;
+        padding: 1rem 2rem !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 64px;
+    }
+    #branding h1#site-name { margin: 0; font-weight: 800; font-size: 1.15rem; }
+    #branding h1#site-name a {
+        color: var(--tf-text) !important;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .tf-logo { font-size: 1.25rem; }
+    .tf-badge {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        font-size: 0.62rem;
+        font-weight: 800;
+        padding: 0.18rem 0.5rem;
+        border-radius: 999px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-left: 0.35rem;
+    }
+
+    #user-tools {
+        color: var(--tf-muted) !important;
+        font-size: 0.82rem;
+        font-weight: 500;
+    }
+    #user-tools a {
+        color: var(--tf-text) !important;
+        border-bottom: 1px solid var(--tf-border);
+        padding-bottom: 1px;
+        text-decoration: none;
+    }
+    #user-tools a:hover { border-bottom-color: var(--tf-primary); }
+
+    /* ─── Breadcrumbs ──────────────────────────────────── */
+    div.breadcrumbs {
+        background: var(--tf-panel) !important;
+        color: var(--tf-muted) !important;
+        border-bottom: 1px solid var(--tf-border) !important;
+        padding: 0.75rem 2rem !important;
+        font-size: 0.82rem;
+    }
+    div.breadcrumbs a { color: var(--tf-text) !important; }
+    div.breadcrumbs a:hover { color: var(--tf-primary) !important; }
+
+    /* ─── Main content area ────────────────────────────── */
+    #content {
+        padding: 2rem !important;
+        background: var(--tf-bg) !important;
+    }
+    #content h1 {
+        font-size: 1.6rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em;
+        color: var(--tf-text) !important;
+        margin-bottom: 1.5rem !important;
+    }
+    #content h2, #content h3 {
+        color: var(--tf-text) !important;
+        font-weight: 700;
+    }
+
+    /* ─── Modules (app sections) ──────────────────────── */
+    .module {
+        background: var(--tf-panel) !important;
+        border: 1px solid var(--tf-border) !important;
+        border-radius: 12px !important;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    .module h2, .module caption, .inline-group h2 {
+        background: var(--tf-soft) !important;
+        color: var(--tf-text) !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        padding: 0.85rem 1.25rem !important;
+        letter-spacing: 0.02em;
+        border-bottom: 1px solid var(--tf-border);
+    }
+    .module table { width: 100%; border-collapse: collapse; }
+    .module table th, .module table td {
+        padding: 0.75rem 1.25rem !important;
+        border-bottom: 1px solid var(--tf-border) !important;
+        color: var(--tf-text);
+        font-size: 0.9rem;
+    }
+    .module table tr:last-child th, .module table tr:last-child td { border-bottom: none !important; }
+    .module table tr:hover td, .module table tr:hover th { background: var(--tf-soft); }
+    .module table th a { color: var(--tf-text) !important; font-weight: 600; }
+    .module table th a:hover { color: var(--tf-primary) !important; }
+    .module table td a {
+        color: var(--tf-muted) !important;
+        font-size: 0.82rem;
+        font-weight: 500;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: all 0.15s;
+    }
+    .module table td a:hover {
+        color: var(--tf-text) !important;
+        background: var(--tf-bg);
+        border-color: var(--tf-border);
+    }
+
+    /* ─── Forms / inputs ───────────────────────────────── */
+    input[type="text"], input[type="password"], input[type="email"],
+    input[type="url"], input[type="number"], input[type="date"],
+    input[type="datetime-local"], input[type="time"],
+    textarea, select, .vTextField {
+        background: var(--tf-bg) !important;
+        border: 1px solid var(--tf-border) !important;
+        color: var(--tf-text) !important;
+        border-radius: 8px !important;
+        padding: 0.6rem 0.85rem !important;
+        font-family: inherit !important;
+        font-size: 0.9rem !important;
+    }
+    input:focus, textarea:focus, select:focus {
+        outline: none !important;
+        border-color: var(--tf-primary) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+    }
+
+    /* ─── Buttons ──────────────────────────────────────── */
+    .button, input[type="submit"], input[type="button"],
+    button, .default {
+        background: var(--tf-primary) !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 0.6rem 1.15rem !important;
+        font-family: inherit !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        cursor: pointer !important;
+        transition: all 0.15s !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+    }
+    .button:hover, input[type="submit"]:hover, button:hover, .default:hover {
+        background: var(--tf-primary-hover) !important;
+        transform: translateY(-1px);
+    }
+    .button.default, input[type="submit"].default { background: var(--tf-primary) !important; }
+    .deletelink, .button.deletelink {
+        background: var(--tf-danger) !important;
+    }
+    .deletelink:hover { background: #dc2626 !important; }
+
+    /* ─── Object tools (top-right buttons on change lists) ── */
+    ul.object-tools { margin: 0 0 1.5rem 0; }
+    ul.object-tools a, ul.object-tools a:link, ul.object-tools a:visited {
+        background: var(--tf-primary) !important;
+        color: #fff !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        padding: 0.55rem 1rem !important;
+    }
+    ul.object-tools a:hover {
+        background: var(--tf-primary-hover) !important;
+        color: #fff !important;
+    }
+    ul.object-tools a.addlink::before { content: "＋ "; }
+
+    /* ─── Results table (change list) ──────────────────── */
+    #changelist { background: transparent !important; }
+    #changelist-form .results { overflow-x: auto; }
+    #result_list {
+        background: var(--tf-panel) !important;
+        border: 1px solid var(--tf-border) !important;
+        border-radius: 12px !important;
+        overflow: hidden;
+    }
+    #result_list thead th {
+        background: var(--tf-soft) !important;
+        color: var(--tf-text) !important;
+        border-bottom: 1px solid var(--tf-border) !important;
+        font-weight: 700 !important;
+        font-size: 0.82rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    #result_list tbody tr { background: var(--tf-panel) !important; }
+    #result_list tbody tr:hover { background: var(--tf-soft) !important; }
+    #result_list tbody td, #result_list tbody th {
+        border-bottom: 1px solid var(--tf-border) !important;
+        color: var(--tf-text) !important;
+        font-size: 0.88rem;
+        padding: 0.75rem 1rem !important;
+    }
+    #result_list tbody tr.selected { background: var(--tf-soft) !important; }
+    #result_list a { color: #a5b4fc !important; }
+    #result_list a:hover { color: #e0e7ff !important; }
+
+    /* ─── Filters sidebar ──────────────────────────────── */
+    #changelist-filter {
+        background: var(--tf-panel) !important;
+        border-left: 1px solid var(--tf-border) !important;
+    }
+    #changelist-filter h2 {
+        background: var(--tf-soft) !important;
+        color: var(--tf-text) !important;
+        border-bottom: 1px solid var(--tf-border) !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.85rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    #changelist-filter h3 {
+        color: var(--tf-muted) !important;
+        font-size: 0.78rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.85rem 1rem 0.35rem !important;
+    }
+    #changelist-filter ul { padding: 0 1rem 0.75rem !important; }
+    #changelist-filter li a {
+        color: var(--tf-text) !important;
+        font-size: 0.85rem;
+        padding: 0.25rem 0;
+        display: block;
+    }
+    #changelist-filter li.selected a { color: #a5b4fc !important; font-weight: 700; }
+    #changelist-filter li a:hover { color: var(--tf-primary) !important; }
+
+    /* ─── Messages ─────────────────────────────────────── */
+    .messagelist li {
+        border-radius: 10px !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 1rem !important;
+        margin-bottom: 0.5rem;
+        border: 1px solid;
+    }
+    .messagelist li.success {
+        background: rgba(16, 185, 129, 0.12) !important;
+        border-color: rgba(16, 185, 129, 0.35) !important;
+        color: #6ee7b7 !important;
+    }
+    .messagelist li.warning {
+        background: rgba(245, 158, 11, 0.12) !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+        color: #fcd34d !important;
+    }
+    .messagelist li.error {
+        background: rgba(239, 68, 68, 0.12) !important;
+        border-color: rgba(239, 68, 68, 0.35) !important;
+        color: #fca5a5 !important;
+    }
+
+    /* ─── Submit rows in forms ─────────────────────────── */
+    .submit-row {
+        background: var(--tf-panel) !important;
+        border: 1px solid var(--tf-border) !important;
+        border-radius: 12px !important;
+        padding: 1rem 1.25rem !important;
+        margin-top: 1.5rem;
+    }
+
+    /* ─── Fieldsets ────────────────────────────────────── */
+    fieldset.module {
+        background: var(--tf-panel) !important;
+        border: 1px solid var(--tf-border) !important;
+        border-radius: 12px !important;
+        padding: 0 !important;
+    }
+    .form-row {
+        border-bottom: 1px solid var(--tf-border) !important;
+        padding: 0.85rem 1.25rem !important;
+    }
+    .form-row:last-child { border-bottom: none !important; }
+    label { color: var(--tf-muted) !important; font-weight: 600 !important; font-size: 0.85rem !important; }
+    .help, .helptext { color: var(--tf-muted) !important; font-size: 0.78rem !important; }
+
+    /* ─── Recent actions sidebar ──────────────────────── */
+    #content-related {
+        background: var(--tf-panel) !important;
+        border: 1px solid var(--tf-border) !important;
+        border-radius: 12px !important;
+        padding: 1.25rem !important;
+    }
+    #content-related h2 {
+        color: var(--tf-text) !important;
+        font-size: 0.9rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 1rem !important;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--tf-border);
+    }
+    #content-related h3 {
+        color: var(--tf-muted) !important;
+        font-size: 0.8rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+    #content-related .actionlist li {
+        padding: 0.5rem 0 !important;
+        border-bottom: 1px solid var(--tf-border);
+        font-size: 0.85rem;
+        color: var(--tf-text);
+    }
+    #content-related .actionlist li:last-child { border-bottom: none; }
+    #content-related a { color: #a5b4fc !important; }
+    #content-related a:hover { color: #e0e7ff !important; }
+
+    /* ─── Pagination ──────────────────────────────────── */
+    .paginator {
+        background: var(--tf-panel) !important;
+        border: 1px solid var(--tf-border) !important;
+        border-radius: 10px !important;
+        padding: 0.75rem 1rem !important;
+        margin-top: 1rem;
+        color: var(--tf-muted) !important;
+        font-size: 0.85rem;
+    }
+    .paginator a { color: #a5b4fc !important; }
+    .paginator a:hover { color: #e0e7ff !important; }
+
+    /* ─── Search bar ──────────────────────────────────── */
+    #toolbar {
+        background: var(--tf-panel) !important;
+        border: 1px solid var(--tf-border) !important;
+        border-radius: 10px !important;
+        padding: 0.75rem 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    #toolbar form input[type="text"] { min-width: 260px; }
+
+    /* ─── Calendar / clock widgets ────────────────────── */
+    .calendarbox, .clockbox {
+        background: var(--tf-panel) !important;
+        border: 1px solid var(--tf-border) !important;
+        border-radius: 10px;
+    }
+    .calendarbox h2, .clockbox h2 {
+        background: var(--tf-soft) !important;
+        color: var(--tf-text) !important;
+        border-bottom: 1px solid var(--tf-border) !important;
+    }
+    .calendar caption, .calendar th, .calendar td { color: var(--tf-text) !important; }
+    .calendar td a { color: #a5b4fc !important; }
+    .calendar td.today a { background: var(--tf-primary) !important; color: #fff !important; }
+
+    /* ─── Login page uses its own template, but ensure no conflicts ── */
+    body.login { background: var(--tf-bg) !important; }
+
+    /* ─── Scrollbar ───────────────────────────────────── */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: var(--tf-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--tf-soft); border-radius: 5px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* ─── Selection ───────────────────────────────────── */
+    ::selection { background: rgba(99, 102, 241, 0.35); color: #fff; }
+</style>
+{% endblock %}

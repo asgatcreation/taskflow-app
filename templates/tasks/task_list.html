@@ -24,16 +24,35 @@
             <option value="medium" {% if priority == "medium" %}selected{% endif %}>Medium</option>
             <option value="low" {% if priority == "low" %}selected{% endif %}>Low</option>
         </select>
+        <select name="sort" class="form-input">
+            <option value="">Sort: Newest</option>
+            <option value="due" {% if sort == "due" %}selected{% endif %}>Sort: Due date</option>
+            <option value="priority" {% if sort == "priority" %}selected{% endif %}>Sort: Priority</option>
+            <option value="created" {% if sort == "created" %}selected{% endif %}>Sort: Oldest</option>
+        </select>
         <button type="submit" class="btn btn-secondary">Filter</button>
-        {% if q or status or priority %}
+        {% if q or status or priority or filter_type or sort %}
             <a href="{% url 'tasks:list' %}" class="btn btn-ghost">Clear</a>
         {% endif %}
+        {% if filter_type %}
+            <input type="hidden" name="filter" value="{{ filter_type }}">
+        {% endif %}
     </form>
+
+    {% if filter_type %}
+        <div class="active-filter">
+            <span>
+                {% if filter_type == "overdue" %}🚨 Showing overdue tasks only{% endif %}
+                {% if filter_type == "due_soon" %}⏰ Showing tasks due within 24 hours{% endif %}
+            </span>
+            <a href="{% url 'tasks:list' %}">Remove filter ✕</a>
+        </div>
+    {% endif %}
 
     {% if tasks %}
         <ul class="task-list">
             {% for task in tasks %}
-                <li class="task-item {% if task.completed %}completed{% endif %} {% if task.is_overdue %}overdue{% endif %}">
+                <li class="task-item {% if task.completed %}completed{% endif %} {% if task.is_overdue %}overdue{% endif %} {% if task.is_due_soon %}due-soon-item{% endif %}">
                     <form method="post" action="{% url 'tasks:toggle' task.pk %}" class="toggle-form">
                         {% csrf_token %}
                         <button type="submit" class="toggle-btn" title="Toggle complete">
@@ -45,18 +64,24 @@
                         <div class="task-title-row">
                             <h3 class="task-title">{{ task.title }}</h3>
                             <span class="priority-badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                            {% if task.is_overdue %}<span class="status-pill pill-overdue">Overdue</span>{% endif %}
+                            {% if task.is_due_soon %}<span class="status-pill pill-soon">Due soon</span>{% endif %}
                         </div>
+
                         {% if task.description %}
-                            <p class="task-description">{{ task.description|truncatewords:20 }}</p>
+                            <p class="task-description">{{ task.description|truncatewords:25 }}</p>
                         {% endif %}
+
                         <div class="task-meta">
                             {% if task.due_date %}
-                                <span class="meta-item {% if task.is_overdue %}overdue-text{% endif %}">
-                                    📅 Due {{ task.due_date }}
-                                    {% if task.is_overdue %}(overdue){% endif %}
+                                <span class="meta-item {% if task.is_overdue %}overdue-text{% endif %} {% if task.is_due_soon %}due-soon-text{% endif %}">
+                                    📅 Due {{ task.due_date|date:"M d, Y · H:i" }}
                                 </span>
                             {% endif %}
-                            <span class="meta-item">Created {{ task.created_at|date:"M d, Y" }}</span>
+                            <span class="meta-item">🕓 Created {{ task.created_at|date:"M d, H:i" }}</span>
+                            {% if task.completed and task.completed_at %}
+                                <span class="meta-item meta-done">✅ Completed {{ task.completed_at|date:"M d, H:i" }}</span>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -71,11 +96,11 @@
         {% if is_paginated %}
             <div class="pagination">
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if priority %}&priority={{ priority }}{% endif %}" class="btn btn-ghost">← Previous</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if priority %}&priority={{ priority }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="btn btn-ghost">← Previous</a>
                 {% endif %}
                 <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if priority %}&priority={{ priority }}{% endif %}" class="btn btn-ghost">Next →</a>
+                    <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if priority %}&priority={{ priority }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="btn btn-ghost">Next →</a>
                 {% endif %}
             </div>
         {% endif %}

@@ -12,29 +12,38 @@
     </header>
 
     <section class="stats-grid">
-        <div class="stat-card">
+        <a href="{% url 'tasks:list' %}" class="stat-card stat-link">
             <span class="stat-label">Total</span>
             <span class="stat-value">{{ total }}</span>
-        </div>
-        <div class="stat-card stat-pending">
+            <span class="stat-hint">View all →</span>
+        </a>
+        <a href="{% url 'tasks:list' %}?status=pending" class="stat-card stat-pending stat-link">
             <span class="stat-label">Pending</span>
             <span class="stat-value">{{ pending }}</span>
-        </div>
-        <div class="stat-card stat-completed">
+            <span class="stat-hint">View pending →</span>
+        </a>
+        <a href="{% url 'tasks:list' %}?status=completed" class="stat-card stat-completed stat-link">
             <span class="stat-label">Completed</span>
             <span class="stat-value">{{ completed }}</span>
-        </div>
-        <div class="stat-card stat-overdue">
+            <span class="stat-hint">View completed →</span>
+        </a>
+        <a href="{% url 'tasks:list' %}?filter=overdue" class="stat-card stat-overdue stat-link">
             <span class="stat-label">Overdue</span>
             <span class="stat-value">{{ overdue }}</span>
-        </div>
+            <span class="stat-hint">View overdue →</span>
+        </a>
+        <a href="{% url 'tasks:list' %}?filter=due_soon" class="stat-card stat-soon stat-link">
+            <span class="stat-label">Due Soon</span>
+            <span class="stat-value">{{ due_soon }}</span>
+            <span class="stat-hint">Next 24h →</span>
+        </a>
     </section>
 
     <section class="two-col">
         <div class="panel">
             <div class="panel-header">
-                <h2>Recent tasks</h2>
-                <a href="{% url 'tasks:list' %}" class="link">View all →</a>
+                <h2>🕓 Recent tasks</h2>
+                <a href="{% url 'tasks:list' %}?sort=created" class="link">View all →</a>
             </div>
             {% if recent_tasks %}
                 <ul class="task-mini-list">
@@ -42,6 +51,7 @@
                         <li class="task-mini {% if task.completed %}done{% endif %}">
                             <span class="priority-dot priority-{{ task.priority }}"></span>
                             <span class="task-mini-title">{{ task.title }}</span>
+                            <span class="task-mini-time">{{ task.created_at|timesince }} ago</span>
                             {% if task.completed %}<span class="tag tag-done">Done</span>{% endif %}
                         </li>
                     {% endfor %}
@@ -53,7 +63,8 @@
 
         <div class="panel">
             <div class="panel-header">
-                <h2>Upcoming</h2>
+                <h2>📅 Upcoming deadlines</h2>
+                <a href="{% url 'tasks:list' %}?sort=due" class="link">View all →</a>
             </div>
             {% if upcoming %}
                 <ul class="task-mini-list">
@@ -61,14 +72,37 @@
                         <li class="task-mini">
                             <span class="priority-dot priority-{{ task.priority }}"></span>
                             <span class="task-mini-title">{{ task.title }}</span>
-                            <span class="tag">{{ task.due_date }}</span>
+                            <span class="task-mini-time {% if task.is_due_soon %}due-soon{% endif %}">
+                                {{ task.due_date|date:"M d, H:i" }}
+                            </span>
                         </li>
                     {% endfor %}
                 </ul>
             {% else %}
-                <p class="empty">No tasks with due dates.</p>
+                <p class="empty">No upcoming deadlines.</p>
             {% endif %}
         </div>
+    </section>
+
+    <section class="panel panel-full">
+        <div class="panel-header">
+            <h2>✅ Recently completed</h2>
+            <a href="{% url 'tasks:list' %}?status=completed" class="link">View all →</a>
+        </div>
+        {% if recently_completed %}
+            <ul class="task-mini-list">
+                {% for task in recently_completed %}
+                    <li class="task-mini done">
+                        <span class="priority-dot priority-{{ task.priority }}"></span>
+                        <span class="task-mini-title">{{ task.title }}</span>
+                        <span class="task-mini-time">{{ task.completed_at|timesince }} ago</span>
+                        <span class="tag tag-done">✓</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty">Nothing completed yet — go check off a task!</p>
+        {% endif %}
     </section>
 </div>
 {% endblock %}

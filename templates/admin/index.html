@@ -1,0 +1,155 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* ─── Admin dashboard hero ─────────────────────────── */
+    .admin-hero {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(139, 92, 246, 0.12));
+        border: 1px solid var(--tf-border);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        position: relative;
+        overflow: hidden;
+    }
+    .admin-hero::before {
+        content: "";
+        position: absolute;
+        top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.35), transparent 70%);
+        pointer-events: none;
+    }
+    .admin-hero-text h1 {
+        margin: 0 0 0.5rem 0 !important;
+        font-size: 1.75rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em;
+    }
+    .admin-hero-text p {
+        margin: 0;
+        color: var(--tf-muted);
+        font-size: 0.95rem;
+    }
+    .admin-hero-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+    }
+    .hero-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.15rem;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: all 0.15s;
+        border: 1px solid transparent;
+    }
+    .hero-btn-primary {
+        background: var(--tf-primary);
+        color: #fff !important;
+    }
+    .hero-btn-primary:hover {
+        background: var(--tf-primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+        color: #fff !important;
+    }
+    .hero-btn-ghost {
+        background: transparent;
+        color: var(--tf-text) !important;
+        border-color: var(--tf-border);
+    }
+    .hero-btn-ghost:hover {
+        background: var(--tf-soft);
+        border-color: var(--tf-muted);
+    }
+
+    /* ─── Section headers ─────────────────────────────── */
+    .admin-section-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--tf-muted);
+        margin: 2rem 0 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .admin-section-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--tf-border);
+    }
+
+    /* ─── App layout: content + sidebar ───────────────── */
+    .admin-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 1.5rem;
+        align-items: start;
+    }
+    @media (max-width: 1024px) {
+        .admin-layout { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+
+    <!-- HERO -->
+    <div class="admin-hero">
+        <div class="admin-hero-text">
+            <h1>Welcome back, {{ user.get_short_name|default:user.username }} 👋</h1>
+            <p>Manage your TaskFlow data — users, tasks, and system activity.</p>
+        </div>
+        <div class="admin-hero-actions">
+            <a href="/" class="hero-btn hero-btn-ghost">← Back to TaskFlow</a>
+            <a href="{% url 'tasks:list' %}" class="hero-btn hero-btn-primary">View live tasks →</a>
+        </div>
+    </div>
+
+    <div class="admin-layout">
+        <div>
+            <div class="admin-section-title">📂 Your Apps</div>
+            {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+        </div>
+
+        <div id="content-related">
+            {% if recent_actions %}
+                <h2>🕓 Recent Actions</h2>
+                {% for action in recent_actions %}
+                    <h3>{% if action.url %}<a href="{{ action.url }}">{{ action.name }}</a>{% else %}{{ action.name }}{% endif %}</h3>
+                    <ul class="actionlist">
+                        {% for item in action.items %}
+                            <li>
+                                {% if item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            {% else %}
+                <h2>🕓 Recent Actions</h2>
+                <p style="color: var(--tf-muted); font-size: 0.85rem;">No recent activity yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

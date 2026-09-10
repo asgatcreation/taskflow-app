@@ -1,0 +1,167 @@
+{% load i18n %}
+
+<style>
+    .model-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+    .model-card {
+        background: var(--tf-panel);
+        border: 1px solid var(--tf-border);
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.15s;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .model-card:hover {
+        border-color: #475569;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+    }
+    .model-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .model-icon {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .model-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--tf-text) !important;
+        text-decoration: none !important;
+        line-height: 1.3;
+    }
+    .model-title:hover { color: #a5b4fc !important; }
+    .model-appname {
+        font-size: 0.72rem;
+        color: var(--tf-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+        margin-top: 0.1rem;
+    }
+    .model-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: auto;
+    }
+    .model-btn {
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.4rem 0.75rem;
+        border-radius: 7px;
+        text-decoration: none !important;
+        border: 1px solid var(--tf-border);
+        transition: all 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .model-btn-view {
+        background: transparent;
+        color: var(--tf-text) !important;
+    }
+    .model-btn-view:hover {
+        background: var(--tf-soft);
+        border-color: var(--tf-muted);
+    }
+    .model-btn-add {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc !important;
+        border-color: rgba(99, 102, 241, 0.35);
+    }
+    .model-btn-add:hover {
+        background: rgba(99, 102, 241, 0.25);
+        border-color: rgba(99, 102, 241, 0.5);
+        color: #c7d2fe !important;
+    }
+    .app-group { margin-bottom: 2rem; }
+    .app-group-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--tf-border);
+    }
+    .app-group-header h2 {
+        margin: 0 !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: var(--tf-text) !important;
+        background: transparent !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+    .app-group-header a {
+        color: var(--tf-text) !important;
+        text-decoration: none !important;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+    .app-group-header a:hover { color: #a5b4fc !important; }
+</style>
+
+{% if app_list %}
+    {% for app in app_list %}
+        <div class="app-group app-{{ app.app_label }}">
+            <div class="app-group-header">
+                <h2>
+                    {% if app.app_url %}<a href="{{ app.app_url }}">{{ app.name }}</a>{% else %}{{ app.name }}{% endif %}
+                </h2>
+            </div>
+
+            <div class="model-grid">
+                {% for model in app.models %}
+                    <div class="model-card">
+                        <div class="model-card-header">
+                            <div class="model-icon">
+                                {% if model.object_name == "User" %}👤
+                                {% elif model.object_name == "Group" %}👥
+                                {% elif model.object_name == "Task" %}✅
+                                {% else %}📄{% endif %}
+                            </div>
+                            <div>
+                                <div>
+                                    {% if model.admin_url %}
+                                        <a class="model-title" href="{{ model.admin_url }}">{{ model.name }}</a>
+                                    {% else %}
+                                        <span class="model-title">{{ model.name }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="model-appname">{{ app.name }}</div>
+                            </div>
+                        </div>
+
+                        <div class="model-actions">
+                            {% if model.admin_url %}
+                                <a class="model-btn model-btn-view" href="{{ model.admin_url }}">
+                                    View all
+                                </a>
+                            {% endif %}
+                            {% if model.add_url %}
+                                <a class="model-btn model-btn-add" href="{{ model.add_url }}">
+                                    ＋ Add {{ model.name|slice:":-1" }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p style="color: var(--tf-muted);">You don't have permission to view or edit anything.</p>
+{% endif %}

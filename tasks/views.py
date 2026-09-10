@@ -18,16 +18,26 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         qs = Task.objects.filter(user=self.request.user)
-        today = timezone.now().date()
+        now = timezone.now()
 
         ctx["total"] = qs.count()
         ctx["completed"] = qs.filter(completed=True).count()
         ctx["pending"] = qs.filter(completed=False).count()
-        ctx["overdue"] = qs.filter(completed=False, due_date__lt=today).count()
+        ctx["overdue"] = qs.filter(completed=False, due_date__lt=now).count()
+        ctx["due_soon"] = qs.filter(
+            completed=False,
+            due_date__gte=now,
+            due_date__lte=now + timezone.timedelta(hours=24),
+        ).count()
+
         ctx["recent_tasks"] = qs.order_by("-created_at")[:5]
         ctx["upcoming"] = (
-            qs.filter(completed=False, due_date__gte=today)
+            qs.filter(completed=False, due_date__gte=now)
             .order_by("due_date")[:5]
+        )
+        ctx["recently_completed"] = (
+            qs.filter(completed=True, completed_at__isnull=False)
+            .order_by("-completed_at")[:5]
         )
         return ctx
 
@@ -40,19 +50,40 @@ class TaskListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = Task.objects.filter(user=self.request.user)
+        now = timezone.now()
 
         q = self.request.GET.get("q", "").strip()
         status = self.request.GET.get("status", "")
         priority = self.request.GET.get("priority", "")
+        filter_type = self.request.GET.get("filter", "")
+        sort = self.request.GET.get("sort", "")
 
         if q:
             qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q))
+
         if status == "completed":
             qs = qs.filter(completed=True)
         elif status == "pending":
             qs = qs.filter(completed=False)
+
         if priority in ("low", "medium", "high"):
             qs = qs.filter(priority=priority)
+
+        if filter_type == "overdue":
+            qs = qs.filter(completed=False, due_date__lt=now)
+        elif filter_type == "due_soon":
+            qs = qs.filter(
+                completed=False,
+                due_date__gte=now,
+                due_date__lte=now + timezone.timedelta(hours=24),
+            )
+
+        if sort == "due":
+            qs = qs.order_by("completed", "due_date")
+        elif sort == "priority":
+            qs = qs.order_by("completed", "-priority")
+        elif sort == "created":
+            qs = qs.order_by("-created_at")
 
         return qs
 
@@ -61,6 +92,9 @@ class TaskListView(LoginRequiredMixin, ListView):
         ctx["q"] = self.request.GET.get("q", "")
         ctx["status"] = self.request.GET.get("status", "")
         ctx["priority"] = self.request.GET.get("priority", "")
+        ctx["filter_type"] = self.request.GET.get("filter", "")
+        ctx["sort"] = self.request.GET.get("sort", "")
+        ctx["now"] = timezone.now()
         return ctx
 
 
@@ -119,9 +153,11 @@ class TaskToggleView(LoginRequiredMixin, View):
     def post(self, request, pk):
         task = get_object_or_404(Task, pk=pk, user=request.user)
         task.completed = not task.completed
-        task.save(update_fields=["completed", "updated_at"])
         if task.completed:
+            task.completed_at = timezone.now()
             messages.success(request, f"Completed: {task.title}")
         else:
+            task.completed_at = None
             messages.info(request, f"Reopened: {task.title}")
+        task.save(update_fields=["completed", "completed_at", "updated_at"])
         return redirect(request.META.get("HTTP_REFERER", "tasks:list"))

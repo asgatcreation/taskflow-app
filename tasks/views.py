@@ -12,6 +12,20 @@ from .models import Task
 from .forms import TaskForm
 
 
+class LandingView(TemplateView):
+    """Public landing page — no login required."""
+    template_name = "tasks/landing.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # Optional: send authenticated users straight to their dashboard
+        # Uncomment the next 2 lines if you want that behavior.
+        # if request.user.is_authenticated:
+        #     return redirect("tasks:dashboard")
+        return super().dispatch(request, *args, **kwargs)
+    
+    
+    
+
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "tasks/dashboard.html"
 

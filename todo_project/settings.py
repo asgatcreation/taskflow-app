@@ -95,7 +95,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "tasks:dashboard"
-LOGOUT_REDIRECT_URL = "accounts:login"
+LOGOUT_REDIRECT_URL = "tasks:landing"
 
 # ─── i18n / tz ────────────────────────────────────────────
 LANGUAGE_CODE = "en-us"

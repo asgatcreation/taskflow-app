@@ -14,7 +14,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="{% url 'tasks:dashboard' %}" class="brand">
+            <a href="{% if user.is_authenticated %}{% url 'tasks:dashboard' %}{% else %}{% url 'tasks:landing' %}{% endif %}" class="brand">
                 <span class="brand-icon">✅</span> TaskFlow
             </a>
             <div class="nav-links">

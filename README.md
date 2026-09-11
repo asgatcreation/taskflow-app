@@ -43,8 +43,26 @@ It's built to solve real problems: user isolation, per-account data, deadline tr
 
 ## 📸 Screenshots
 
-### 🔐 Login
-![Login page](docs/screenshot-login.png)
+### 🌄 Landing Page
+![Landing page](docs/screenshot-landing.png)
+
+### 🔐 Authentication
+<table>
+<tr>
+<td width="50%">
+
+**Sign up**  
+![Register](docs/screenshot-register.png)
+
+</td>
+<td width="50%">
+
+**Log in**  
+![Login](docs/screenshot-login.png)
+
+</td>
+</tr>
+</table>
 
 ### 📊 Dashboard
 ![Dashboard](docs/screenshot-dashboard.png)
@@ -52,7 +70,11 @@ It's built to solve real problems: user isolation, per-account data, deadline tr
 ### 📋 Task List
 ![Task list](docs/screenshot-tasks.png)
 
-> 📝 Add screenshots to `docs/` and update these paths once you capture them.
+### ✏️ Task Form
+![Task form](docs/screenshot-task-form.png)
+
+### 🛡️ Admin Dashboard
+![Admin dashboard](docs/screenshot-admin.png)
 
 ---
 
